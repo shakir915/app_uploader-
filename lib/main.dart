@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:html' as html;
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 void main() {
   runApp(const MyApp());
@@ -94,22 +98,48 @@ class _MyHomePageState extends State<MyHomePage> {
           // axis because Columns are vertical (the cross axis would be
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
+          children:  <Widget>[
+            GestureDetector(
+                onTap: (){
+                  getDownloadLink();
+                },
+                child: Text("Download IOS")),
+            Text("Download Android"),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+      floatingActionButton: Opacity(
+        opacity: 0,
+        child: FloatingActionButton(
+          onPressed: _incrementCounter,
+          tooltip: 'Increment',
+          child: const Icon(Icons.add),
+        ),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+  Future<void> getDownloadLink() async {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    final storage = FirebaseStorage.instance;
+    print("storage $storage");
+    final storageRef = FirebaseStorage.instance.ref();
+    print("storageRef $storageRef");
+    final pathReference = storageRef.child("everything_women.ipa");
+    print("pathReference $pathReference");
+    final imageUrl = await pathReference.getDownloadURL();
+    print("imageUrl $imageUrl");
+
+    downloadFile(imageUrl);
+  }
+
+  void downloadFile(String url) {
+    html.AnchorElement anchorElement = new html.AnchorElement(href: url);
+    anchorElement.download = url;
+    anchorElement.click();
+
+    print("imageUrl $url");
   }
 }
